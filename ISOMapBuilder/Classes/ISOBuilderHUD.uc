@@ -6,6 +6,7 @@ var ISOBuilderNode root;
 var MapZone zone;
 var MapZone unitZone;
 var Actor worldActor;
+var Vector mouseOnWorld;
 
 simulated function PostBeginPlay()
 {
@@ -23,13 +24,83 @@ event PostRender()
 	super.PostRender();
 
 	// Show the hover area
-	//ShowHoverArea();
+	//ShowHoverArea(range);
 	ShowPathArea(range);
+	//ShowEdges();
+	//ShowEverything();
 
 	// Now lets show the hover areas
 	if( root != none )
 		DrawProjectedNode(root, class'ISONode'.const.NODE_SIZE, RedColor );
+
+
+	Canvas.SetDrawColor( 255, 255, 255, 255 );
+	Canvas.SetPos( 10.0, SizeY-20 );
+	Canvas.DrawText( "MouseWorld: X:" $ mouseOnWorld.X $ ", Y:" $ mouseOnWorld.Y );
+
+	Canvas.SetPos( SizeX/2, 10.0 );
+	//Canvas.DrawText( WorldInfo.GetMapInfo().Name );
+	Canvas.DrawText( WorldInfo.GetMapName() );
+	
 } 
+
+function ShowEverything()
+{
+	local ISOMapBuilder     game;
+	local ISOGrid           grid;
+	local ISONode node;
+
+	game = ISOMapBuilder(WorldInfo.Game);
+	grid = game.GetGrid();
+
+	foreach grid.nodes(node)
+	{
+		DrawProjectedNode(node, class'ISONode'.const.NODE_SIZE, GreenColor );
+	}
+}
+
+function ShowEdges()
+{
+	local ISOMapBuilder     game;
+	local ISOGrid           grid;
+	local ISONode node;
+	local int r;
+
+	game = ISOMapBuilder(WorldInfo.Game);
+	grid = game.GetGrid();
+
+
+	for( r=0;r<grid.Rows;r++ )
+	{
+		node = grid.GetNode(r, 0);
+		DrawProjectedNode(node, class'ISONode'.const.NODE_SIZE, WhiteColor );
+
+		node = grid.GetNode(r, grid.Cols-1);
+		DrawProjectedNode(node, class'ISONode'.const.NODE_SIZE, WhiteColor );
+
+		node = grid.GetNode(r, 1);
+		DrawProjectedNode(node, class'ISONode'.const.NODE_SIZE, RedColor );
+
+		/*
+		node = grid.GetNode(r, grid.Cols-2);
+		DrawProjectedNode(node, class'ISONode'.const.NODE_SIZE, WhiteColor );
+
+		node = grid.GetNode(r, grid.Cols);
+		DrawProjectedNode(node, class'ISONode'.const.NODE_SIZE, RedColor );
+		*/
+	}
+
+	/*
+	for( c=0;c<grid.Cols;c++ )
+	{
+		node = grid.GetNode(0, c);
+		DrawProjectedNode(node, class'ISONode'.const.NODE_SIZE, RedColor );
+
+		node = grid.GetNode(grid.Rows-1, c);
+		DrawProjectedNode(node, class'ISONode'.const.NODE_SIZE, RedColor );
+	}
+	*/
+}
 
 /**
  * Show the hover area
@@ -39,17 +110,21 @@ function ShowPathArea(int range)
 {
 	// Get the center of the game's grid
 	local ISOMapBuilder     game;
-	local ISOBuilderGrid    grid;
+	local ISOGrid           grid;
+	local ISOGridController gc;
 	local ISONode           current;
 	local Color             highlightColor;
 
 	highlightColor = MakeColor(0,0,255,255);
+
 	game = ISOMapBuilder(WorldInfo.Game);
-	grid = ISOBuilderGrid(game.GetGrid());
+	gc   = game.GetGridController();
+	grid = game.GetGrid();
 
 
-	current = GetCurrentHoverNode(game, grid);
+	current = GetCurrentHoverNode(game, gc);
 
+	//`Log("Current: " @current.row @current.col @current.height @current.GetCentroid() );
 	// Only process the zone if its needed
 	if( current != root && current != none)
 	{
@@ -87,23 +162,27 @@ function ShowPathArea(int range)
 /**
  * Show the hover area
  * 
- **
-function ShowHoverArea()
+ **/
+function ShowHoverArea(int range)
 {
 	// Get the center of the game's grid
 	local ISOMapBuilder     game;
-	local ISOBuilderGrid    grid;
+	local ISOGrid           grid;
+	local ISOGridController gc;
 	local ISONode           current;
 
 	game = ISOMapBuilder(WorldInfo.Game);
-	grid = ISOBuilderGrid(game.GetGrid());
+	gc   = game.GetGridController();
+	grid = game.GetGrid();
 
-	current = GetCurrentHoverNode(game, grid);
 
+	current = GetCurrentHoverNode(game, gc);
+
+	`Log("Current: " @current.row @current.col );
 	// Only process the zone if its needed
-	if( current != root )
+	if( current != root && current != none)
 	{
-		zone = class'MapZone'.static.Create(current, 8*class'ISONode'.const.NODE_SIZE, grid, game.LocalPlayer.unit );
+		zone = class'MapZone'.static.Create(current, range, grid );
 		root = ISOBuilderNode(current);
 	}	
 	
@@ -116,16 +195,14 @@ function ShowHoverArea()
 	// Finally, show the zone
 	ShowZone(zone);
 }
-*/
 
 /**
  * Get whatever node the mouse is 
  * currently hovering over
  * 
  **/
-private function ISONode GetCurrentHoverNode(ISOMapBuilder game, ISOBuilderGrid grid)
+private function ISONode GetCurrentHoverNode(ISOMapBuilder game, ISOGridController gc)
 {
-	local Vector mouseOnWorld;
 	//local Actor worldActor;
 
 	// get the data
@@ -135,7 +212,7 @@ private function ISONode GetCurrentHoverNode(ISOMapBuilder game, ISOBuilderGrid 
 	if( worldActor==none )
 		return none;
 
-	return grid.GetNodeBy3D(mouseOnWorld);
+	return gc.GetWorldspaceToGridspace(mouseOnWorld);
 }
 
 function ShowColorZone(MapZone zoneInput, Color c)
@@ -159,7 +236,7 @@ function ShowZone(MapZone zoneIn)
 
 function onSaveMap()
 {
-	ISOBuilderGrid(ISOCoreGameInfo(WorldInfo.Game).grid).SaveMapData();
+	ISOCoreGameInfo(WorldInfo.Game).GetGrid().SaveMapData();
 	onShowNotification("Save Complete");
 }
 
@@ -186,9 +263,17 @@ function DrawProjectedNode(ISONode node, float size, Color col )
 	*/
 	local Vector A, B, C, D, X, N;
 	local Vector from;
-
+	/*
+	local ISOMapBuilder     game;
+	local ISOGrid           grid;
+	local ISOGridController gc;
+	local ISONode           current;
+	game = ISOMapBuilder(WorldInfo.Game);
+	gc   = game.GetGridController();
+	grid = game.GetGrid();
+	from = gc.GetVirtualCentroid(node.row, node.col, node.height) - vect(1,1,0)*(size/2);
+	*/
 	from = node.GetCentroid() - vect(1,1,0)*(size/2);
-	
 
 	A = from + vect(0,0,0)*size;
 	B = from + vect(1,0,0)*size;

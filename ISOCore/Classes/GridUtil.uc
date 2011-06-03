@@ -15,21 +15,34 @@ const UNKNOWN           = -1;   // I have not checked yet, or I cant be sure
  * radius around the passed
  * in range
  **/
-public static final function array<ISONode> GetNodesInRange(ISONode root, int radius, ISOGrid grid, optional bool considerHeight=true)
+public static final function array<ISONode> GetNodesInRange(ISONode root, int radius, ISOGrid grid, optional bool considerHeight=true, bool considerMapBounds=true, optional out int checksum)
 {
 	local array<ISONode> nodes;
 
 	local int minRow, maxRow, r;
 	local int minCol, maxCol, c;
+	local int index;
 	local float uRadius;
 	local Vector nodeCentroid;
 	local ISONode node;
 
-	minRow = Max(0,         root.row-radius);
-	maxRow = Min(grid.rows, root.row+radius);
-	
-	minCol = Max(0,         root.col-radius);
-	maxCol = Min(grid.cols, root.col+radius);
+	if( considerMapBounds )
+	{
+		minRow = Max(0,         root.row-radius);
+		maxRow = Min(grid.rows, root.row+radius);
+			
+		minCol = Max(0,         root.col-radius);
+		maxCol = Min(grid.cols, root.col+radius);
+	}
+	else
+	{
+		minRow = root.row-radius;
+		maxRow = root.row+radius;
+			
+		minCol = root.col-radius;
+		maxCol = root.col+radius;
+	}
+
 
 	// Convert the passed in radius to 'UDK' scale
 	uRadius     = radius * class'ISONode'.const.NODE_SIZE;
@@ -38,14 +51,45 @@ public static final function array<ISONode> GetNodesInRange(ISONode root, int ra
 	{
 		for( c=minCol; c<=maxCol; c++ )
 		{
-			node = grid.GetNode(r,c+1);
-			// Radial check
+			/*
+			node = grid.GetNode(r,c);
 
-			nodeCentroid = node.GetCentroid();
+			// If the node I wanted is not the node I got, then its a node off the grid
+			if( !considerMapBounds && (node.row != r || node.col != c) )
+			{
+				nodeCentroid = grid.GetController().GetVirtualCentroid(r, c, 0);
+				node = none;
+			}
+			else
+				nodeCentroid = node.GetCentroid();	
+			*/
+
+			index = grid.GetNodeIndex(r,c);
+
+			if( !considerMapBounds && (index<0 || index>grid.nodes.Length-1) )
+				node=none;
+			else
+				node = grid.nodes[index];
+
+			// If the node I wanted is not the node I got, then its a node off the grid
+			if( !considerMapBounds && ( node==none || (node.row != r || node.col != c)) )
+			{
+				nodeCentroid = grid.GetController().GetVirtualCentroid(r, c, 0);
+				node = none;
+			}
+			else
+				nodeCentroid = node.GetCentroid();
+
+
+			// Ignore the height
 			if( !considerHeight ) nodeCentroid.Z = root.GetCentroid().Z;
 
 			if( VSize(root.GetCentroid() - nodeCentroid) <= uRadius ) 
-				nodes.AddItem(node);
+			{
+				checksum++;
+				if( node != none )
+					nodes.AddItem(node);
+			}
 		}
 	}
 	return nodes;
@@ -60,13 +104,18 @@ static function bool IsValid(ISONode root, ISOGrid grid, ISOUnitBase base, optio
 	local array<ISONode> area;
 	local ISONode node;
 	local int m;
+	local int checksum;
 
 	// Get the area this unit will take up
-	area = GetNodesInRange(root, base.size, grid, false );
+	area = GetNodesInRange(root, base.size, grid, false, false, checksum );
+
+	if( area.Length != checksum ) return false;
 
 	foreach area(node)
 	{
-		// Now check to see if I can 'fit' there
+		if( node == none ) return false;
+
+		// Is the ground to rugged for me to fit on it?
 		if( base.GetStep() < Abs(root.height - node.height ) )
 			return false;
 
@@ -106,7 +155,7 @@ private static final function GetAllValidPeers(ISONode centroid, ISOGrid grid, I
 	// |_|C|_| c is centroid
 	// |_|_|_|
 	for( r=-1;r<=1;r++ )
-		for( c=0;c<=2;c++ )
+		for( c=-1;c<=1;c++ )
 		{
 			// Get the node
 			node = grid.GetNode(centroid.row + r, centroid.col + c);

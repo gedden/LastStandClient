@@ -2,6 +2,7 @@ class ISONode extends ISOCoreObject;
 
 //var FXNodeDecal newDecal;
 const NODE_SIZE = 16.0f;
+
 const NODE_BLOCKING = 1;
 const NODE_CHASIM   = 2;
 
@@ -26,30 +27,31 @@ var DecalMaterial   HostileSelectionDecal;
  * Set the location for
  * this node
  ********************/
-function initialize(NodeData raw, ISOGrid grid)
+function initialize(NodeData raw, ISOGridController gc)
 {
-	local float xf;
-	local float yf;
+	row         = raw.row;
+	col         = raw.col;
+	height      = raw.height;
 
-	row = raw.row;
-	col = raw.col;
+	location.X  = raw.row    * NODE_SIZE;
+	location.Y  = raw.col    * NODE_SIZE;
+	location   -= gc.gridOrigin;
+	location.Z = raw.height * NODE_SIZE;
 
-	xf = row* NODE_SIZE;
-	yf = col* NODE_SIZE;
+	NodeFlags = raw.flags;
 
-	location.X = xf;
-	location.Y = yf;
-	location.Z = 128;
-
-	location -= grid.gridOrigin;
+	//`log("Raw: " @raw.row @raw.col @raw.height @raw.flags);
+	//`log("Ori: " @gc.gridOrigin );
+	//`log("Loc: " @location );
+	//`log("Flg: " @NodeFlags @isChasim() );
 
 	// Set the centroid
-	centroid = location;
-	centroid.X += class'ISONode'.const.NODE_SIZE/2;
-	centroid.Y += class'ISONode'.const.NODE_SIZE/2;
+	centroid    = location;
+	centroid.X += NODE_SIZE/2;
+	centroid.Y += NODE_SIZE/2;
 
 	// Setup the index for this node
-	index       = ISOGrid(Outer).GetNodeIndex(row, col);
+	index       = gc.grid.GetNodeIndex(row, col);
 }
 
 function Vector GetCentroid()

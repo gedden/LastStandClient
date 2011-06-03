@@ -4,11 +4,6 @@ var ISOEditorNode editorNode;
 
 var Color wireColor;
 
-function SetChasim(bool chasim)
-{
-	super.SetChasim(chasim);
-}
-
 function Color GetColor()
 {
 	if( isChasim() )

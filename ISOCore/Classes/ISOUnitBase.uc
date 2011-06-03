@@ -36,7 +36,7 @@ function int GetStep()
 DefaultProperties
 {
 	team    = 0;
-	size    = 1.5;
-	step    = 3;
+	size    = 2;
+	step    = 2;
 	MovementFlags=UNIT_WALKING;
 }

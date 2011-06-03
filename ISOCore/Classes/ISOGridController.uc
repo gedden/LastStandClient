@@ -20,14 +20,17 @@ var	class<ISONode> NodeClass;
  **/
 function Setup()
 {
-	`Log("ISOGridController.Setup()");
 	// Construct the grid bounds
 	ConstructBounds();
 
 	// Create the grid
-	grid = new GridClass;
-	grid.setup(NodeClass, self);
-	
+	grid = new (none, GetMapName()) GridClass;
+	grid.setup(NodeClass, self);	
+}
+
+function String GetMapName()
+{
+	return WorldInfo.GetMapName();
 }
 
 /******************************
@@ -81,7 +84,7 @@ function ISONode GetWorldspaceToGridspace(Vector loc)
 	loc -= extent.Origin;
 
 	// Process the offsets
-	loc.Y += class'ISONode'.const.NODE_SIZE;
+	//loc.Y += class'ISONode'.const.NODE_SIZE;
 
 	return grid.GetNode(loc.X / class'ISONode'.const.NODE_SIZE, loc.Y / class'ISONode'.const.NODE_SIZE);
 }

@@ -1,5 +1,5 @@
 //class ISOGrid extends DecalManager;
-class ISOGrid extends Actor config(ISOMapBuilder) perobjectconfig;
+class ISOGrid extends Object config(MapData) perobjectconfig;
 
 struct PlayerStartData
 {
@@ -8,10 +8,8 @@ struct PlayerStartData
 	var int team;
 };
 
-var	class<ISONode> NodeClass;
 var array<ISONode> nodes;
-
-var Vector gridOrigin;
+var ISOGridController gc;
 
 const NODE_SIZE = 16.0f;
 
@@ -26,7 +24,7 @@ var config array<PlayerStartData> PlayerStarts;
  * defined node data
  * 
  *****************************/
-function setup()
+function setup(class<ISONode> NodeClass, ISOGridController controller)
 {
 	local int r;
 	local int c;
@@ -36,11 +34,17 @@ function setup()
 	{
 		for( c=0;c<cols;c++ )
 		{
-			i++;
 			nodes[i] = new(self) NodeClass;
-			nodes[i].initialize(data[i], self);
+			nodes[i].initialize(data[i], controller );
+			i++;
 		}
 	}
+	gc = controller;
+}
+
+function ISOGridController GetController()
+{
+	return gc;
 }
 
 function ISONode GetNode(int r, int c)
@@ -50,7 +54,7 @@ function ISONode GetNode(int r, int c)
 
 function int GetNodeIndex(int r, int c)
 {
-	return (r*cols)+c;
+	return (r*cols)+(c+1);
 }
 
 function showNodes(ISOHUD hud)
@@ -77,7 +81,15 @@ function int getCols()
 	return rows;
 }
 
+/** 
+ *  Save the config file
+ **/
+function SaveMapData()
+{
+	`Log("Saving Config");
+	SaveConfig();
+}
+
 DefaultProperties
 {
-	NodeClass   = class'ISONode';
 }

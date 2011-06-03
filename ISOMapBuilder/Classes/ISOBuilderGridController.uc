@@ -14,7 +14,8 @@ var int debugCount;
 function Setup()
 {
 	// Create the grid
-	grid = new GridClass;
+	//grid = new GridClass;
+	grid = new (none, GetMapName()) GridClass;
 
 	// Get the row/col info
 	ConstructBounds();
@@ -22,29 +23,13 @@ function Setup()
 	// Build the nodes
 	ConstructRawNodes();
 
-	// Register the player starting locations
-	ConstructPlayerStarts();
-
 	// Load the data up from the raw nodes
 	grid.setup(NodeClass, self);
 
-	//test();
+	// Register the player starting locations
+	ConstructPlayerStarts();
 }
 
-/*
-function test()
-{
-	local float h, uh;
-	local int k;
-
-	for( h=0;h<32;h+=0.05 )
-	{
-		k = class'GridUtil'.static.CountNodesInRange(grid.GetNode(30,30), h, grid);
-		uh = h * class'ISONode'.const.NODE_SIZE;
-		`log("Radial Checksum: " @h @uh @k );
-	}
-}
-*/
 
 /** 
  * Construct the bounds, and get

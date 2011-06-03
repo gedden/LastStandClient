@@ -6,17 +6,10 @@
  ****************************************/
 class ISOCoreGameInfo extends GameInfo;
 
-var ISOGrid grid;
-var	class<ISOGrid> GridClass;
+var ISOGridController gc;
+var	class<ISOGridController> GridControllerClass;
 var ISOCorePlayerController LocalPlayer;
 var ActionSequencer sequencer;
-
-DefaultProperties
-{
-	PlayerControllerClass   = class'ISOCore.ISOCorePlayerController'
-	HUDType                 = class'ISOCore.ISOHUD'
-	GridClass               = class'ISOCore.ISOGrid'
-}
 
 event PostLogin( PlayerController NewPlayer )
 {
@@ -28,16 +21,29 @@ event PostLogin( PlayerController NewPlayer )
 	LocalPlayer = ISOCorePlayerController(NewPlayer);
 }
 
+function ISOGridController GetGridController()
+{
+	return gc;
+}
+
 function ISOGrid GetGrid()
 {
-	return grid;
+	return gc.grid;
 }
 
 event PreBeginPlay()
 {
-	// Create the grid
-	grid = Spawn(GridClass);
-	grid.setup();
+	// The actual grid controller
+	gc = Spawn(GridControllerClass);
+	gc.Setup();
 
+	// Build the action sequencer
 	sequencer = Spawn(class'ActionSequencer');
+}
+
+DefaultProperties
+{
+	PlayerControllerClass   = class'ISOCore.ISOCorePlayerController'
+	HUDType                 = class'ISOCore.ISOHUD'
+	GridControllerClass     = class'ISOCore.ISOGridController';
 }
