@@ -1,22 +1,33 @@
 class ISOGame extends ISOCoreGameInfo;
 
-/**
+/** 
+ * Start up the game, bitches
+ **/ 
+event PostLogin( PlayerController NewPlayer )
+{
+    super.PostLogin(NewPlayer);
+	NewPlayer.GotoState('ISOCombatPlayerTurn');
+}
+
+/** 
  * Entry function into the game
  **/ 
 function PostBeginPlay()
 {
-	super.PostBeginPlay();
-
 	// Deploy the bases
+	super.PostBeginPlay();
 	DeployBases();
 }
 
+/**
+ * Deploy bases
+ **/ 
 function DeployBases()
 {
 	local PlayerStartData start;
 	local ActionSpawnUnit spawn;
 
-	`log("HItting the scheduler" @GetGrid().PlayerStarts.Length);
+	`log("Hitting the scheduler" @GetGrid().PlayerStarts.Length);
 
 	// Deploy a base at each starting area
 	foreach GetGrid().PlayerStarts(start)
@@ -33,4 +44,5 @@ function DeployBases()
 
 DefaultProperties
 {
+	PlayerControllerClass   = class'ISOGame.ISOGamePlayerController'
 }

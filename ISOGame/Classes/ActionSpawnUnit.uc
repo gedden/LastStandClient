@@ -11,6 +11,8 @@ function actionBegin(int msLate)
 	local Actor unit;
 	super.actionBegin(msLate);
 
+	`Log("Spawning Unit: " @msLate @time );
+
 	unit = WorldInfo.Spawn(unitClass);
 	unit.SetLocation( node.GetCentroid() );
 }

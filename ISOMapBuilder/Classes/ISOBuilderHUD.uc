@@ -3,6 +3,7 @@ class ISOBuilderHUD extends ISOHUD;
 var BuilderGFxHUD builderHUD;
 
 var ISOBuilderNode root;
+var ISOUnit unit;
 var MapZone zone;
 var MapZone unitZone;
 var Actor worldActor;
@@ -128,17 +129,17 @@ function ShowPathArea(int range)
 	// Only process the zone if its needed
 	if( current != root && current != none)
 	{
-		if( game.LocalPlayer.unit == none )
+		if( unit == none )
 		{
-			game.LocalPlayer.unit = Spawn(class'ISOUnitTest');
+			unit = Spawn(class'ISOUnitTest');
 		}
 		else
 		{
 			unitZone        = new class'MapZone';
-			unitZone.nodes  = class'GridUtil'.static.GetNodesInRange(current, game.LocalPlayer.unit.size, grid);
+			unitZone.nodes  = class'GridUtil'.static.GetNodesInRange(current, unit.size, grid);
 		}
 
-		zone = class'MapZone'.static.Create(current, range, grid, game.LocalPlayer.unit );
+		zone = class'MapZone'.static.Create(current, range, grid, unit );
 		root = ISOBuilderNode(current);
 	}	
 	
@@ -153,7 +154,7 @@ function ShowPathArea(int range)
 
 	if( unitZone != none )
 	{
-		if( class'GridUtil'.static.IsValid(current, grid, game.LocalPlayer.unit) )
+		if( class'GridUtil'.static.IsValid(current, grid, unit) )
 			highlightColor = MakeColor(128,0,128,255);
 		ShowColorZone(unitZone, highlightColor);
 	}

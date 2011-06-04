@@ -30,7 +30,11 @@ function Setup()
 
 function String GetMapName()
 {
-	return WorldInfo.GetMapName();
+	local String mapName;
+
+	mapName = WorldInfo.GetMapName();
+	ReplaceText(mapName, "UDEPIE", "");
+	return mapName;
 }
 
 /******************************

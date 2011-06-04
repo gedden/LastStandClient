@@ -1,18 +1,20 @@
 class ISOMapBuilderPlayer extends ISOCorePlayerController;
 
-auto state ISOPlayerEdit extends ISOPlayerWaiting
+auto state ISOPlayerEdit extends ISOPlayerTurn
 {
 	ignores SeePlayer, HearNoise, NotifyBump, TakeDamage, PhysicsVolumeChange, NextWeapon, PrevWeapon, SwitchToBestWeapon;
 
+	/*
 	exec function onSelect()
 	{
+		/*
 		local Vector loc;
 		local Vector norm;
 
 		ISOSelect = !ISOSelect;
 
 		ISOHUD(myHUD).getStuffUnderMouse(loc, norm, selected);
-
+		*/
 		/*
 		if( unit != none && unit.isSelected )
 		{
@@ -37,6 +39,7 @@ auto state ISOPlayerEdit extends ISOPlayerWaiting
 		}
 		*/
 	}
+	*/
 
 }
 

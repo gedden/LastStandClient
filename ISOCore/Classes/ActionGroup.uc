@@ -57,8 +57,9 @@ function actionTick(int dt)
 
 	foreach actions(item)
 	{
-		if( item.offset >= time )
+		if( item.offset <= time )
 		{
+			`log("ActionGroup: Starting Action at" @time @item.offset );
 			actions.RemoveItem(item);
 			active.AddItem(item);
 			item.action.actionBegin(time-item.offset);

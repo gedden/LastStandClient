@@ -6,9 +6,8 @@
  **/
 class ISOCorePlayerController extends GamePlayerController;
 
-var Actor       selected;
 var bool        ISOSelect;
-var ISOUnit     unit;
+var ISOUnit     selected;
 
 
 
@@ -19,7 +18,10 @@ DefaultProperties
 }
 
 // Functions that are defined in the state
-exec function onSelect();
+exec function onClick();
+exec function bool onRequestMove(ISOUnit unit, Vector loc);
+exec function onSelect(ISOUnit unit);
+exec function onDeselect(ISOUnit unit);
 
 simulated event PreBeginPlay()
 {
@@ -173,36 +175,19 @@ state ISOBaseSpectating
 	}
 }
 
-auto state ISOPlayerWaiting extends ISOBaseSpectating
+/** 
+ * Basic Turn state for a player. This allows them
+ * to both select and de-select units
+ **/
+auto state ISOPlayerTurn extends ISOBaseSpectating
 {
-ignores SeePlayer, HearNoise, NotifyBump, TakeDamage, PhysicsVolumeChange, NextWeapon, PrevWeapon, SwitchToBestWeapon;
-
-	exec function Jump();
-	exec function Suicide();
-
-	reliable server function ServerSuicide();
-
-	reliable server function ServerChangeTeam( int N )
+	simulated event BeginState(Name PreviousStateName)
 	{
-		WorldInfo.Game.ChangeTeam(self, N, true);
-	}
-
-	reliable server function ServerRestartPlayer()
-	{
-
-		if ( WorldInfo.TimeSeconds < WaitDelay )
-			return;
-		if ( WorldInfo.NetMode == NM_Client )
-			return;
-		if ( WorldInfo.Game.bWaitingToStartMatch )
-			PlayerReplicationInfo.bReadyToPlay = true;
-		else
-			WorldInfo.Game.RestartPlayer(self);
-	}
-
-	exec function StartFire( optional byte FireModeNum )
-	{
-		ServerReStartPlayer();
+		if ( PlayerReplicationInfo != None )
+		{
+			PlayerReplicationInfo.SetWaitingPlayer(true);
+		}
+		bCollideWorld = true;
 	}
 
 	event EndState(Name NextStateName)
@@ -214,17 +199,83 @@ ignores SeePlayer, HearNoise, NotifyBump, TakeDamage, PhysicsVolumeChange, NextW
 		bCollideWorld = false;
 	}
 
-	// @note: this must be simulated to execute on the client because at the time the initial state is entered, RemoteRole has not been
-	// set yet and so only simulated functions will be executed
-	simulated event BeginState(Name PreviousStateName)
+	/** 
+	 *  Main entry point for mouse clicks from
+	 *  the player
+	 **/
+	exec function onClick()
 	{
-		if ( PlayerReplicationInfo != None )
+		local ISOUnit next;
+		local Vector loc;
+
+		// Get the next selection
+		next = GetNextSelection(loc);
+
+		// Nothing to do
+		if( next == selected ) return;
+
+		// I selected somthing that was not what I had before... deselect current
+		if( selected != none )
 		{
-			PlayerReplicationInfo.SetWaitingPlayer(true);
+			if( next == none && onRequestMove(selected, loc) ) return;
+
+			onDeselect(selected);
+			
 		}
-		bCollideWorld = true;
+
+		if( next == none )
+		{
+			selected = none;
+		}
+		else
+		{
+			selected = next;
+
+			onSelect(selected);
+		}
 	}
 
+	/**
+	 * Select a unit
+	 **/
+	exec function onSelect(ISOUnit unit)
+	{
+		unit.onSelect();
+	}
+
+	/**
+	 * Select a unit
+	 **/
+	exec function onDeselect(ISOUnit unit)
+	{
+		unit.onDeselect();
+	}
+
+	/**
+	 * Get the next selection
+	 **/
+	exec function ISOUnit GetNextSelection(out Vector loc)
+	{
+		local Actor traceActor;
+		local Vector norm;
+
+		// Check to see if I have clicked on some unit
+		ISOHUD(myHUD).getStuffUnderMouse(loc, norm, traceActor);
+
+		if( traceActor != None && traceActor.IsA('ISOUnit') )
+			return ISOUnit(traceActor);
+		return None;
+	}
+
+	/**
+	 * Request move. Return true to deselect afterwords
+	 **/
+	exec function bool onRequestMove(ISOUnit unit, Vector loc)
+	{
+		return false;
+	}
+
+	/*
 	exec function onSelect()
 	{
 		local Vector loc;
@@ -259,5 +310,5 @@ ignores SeePlayer, HearNoise, NotifyBump, TakeDamage, PhysicsVolumeChange, NextW
 
 		}
 	}
-
+	*/
 }

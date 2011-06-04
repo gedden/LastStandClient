@@ -60,7 +60,8 @@ simulated exec function LeftMousePressed()
 simulated exec function LeftMouseReleased()
 {
 	mLeft = false;
-	Outer.onSelect();
+	//ISOCorePlayerController(Outer).onSelect();
+	Outer.onClick();
 }
 
 simulated exec function RightMousePressed()

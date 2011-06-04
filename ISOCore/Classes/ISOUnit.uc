@@ -54,8 +54,9 @@ function SetNode(ISONode next)
 	current = next;
 }
 
-simulated function Destroyed() {
-	onDeselect(true);	
+simulated function Destroyed()
+{
+	onDeselect();	
 }
 
 function onSelect()
@@ -66,14 +67,13 @@ function onSelect()
 	addAbilities();
 }
 
-function onDeselect(bool removeAbility)
+function onDeselect()
 {
 	selectionFX.Destroy();
 	selectionFX = none;
 
 	isSelected = false;
-	if (removeAbility)
-		removeAbilities();
+	//if (removeAbility) removeAbilities();
 }
 
 function addAbilities()
