@@ -3,8 +3,10 @@ class ISONode extends ISOCoreObject;
 //var FXNodeDecal newDecal;
 const NODE_SIZE = 16.0f;
 
+const NODE_NOTHING  = 0;
 const NODE_BLOCKING = 1;
 const NODE_CHASIM   = 2;
+const NODE_PATH     = 4;
 
 var Vector location;
 var Vector centroid;
@@ -57,6 +59,15 @@ function initialize(NodeData raw, ISOGridController gc)
 function Vector GetCentroid()
 {
 	return centroid;
+}
+
+static final operator(22) bool   == ( ISONode A, ISONode B )
+{
+	return A.GetIndex() == B.GetIndex();
+}
+static final operator(22) bool   != ( ISONode A, ISONode B )
+{
+	return A.GetIndex() != B.GetIndex();
 }
 
 /**

@@ -5,9 +5,15 @@ var GFxHUD HudMovie;
 var	class<GFxHUD>	HUDClass;
 
 var Vector          mouse3D;
+var Vector          mouseOnWorld;
 var Vector          worldDireciton;
 var float           scaleformRatioX;
 var float           scaleformRatioY;
+
+var bool drawRadius;
+var Vector          radiusAt;
+var MapZone zone;
+var int radiusSize;
 
 var Actor  debug;
 
@@ -28,6 +34,7 @@ simulated function PostBeginPlay()
 		HudMovie.Initialize();
 	}
 
+	
 	// Register the grid
 	//AddPostRenderedActor(ISOCoreGameInfo(WorldInfo.Game).grid);
 }
@@ -76,10 +83,30 @@ simulated function GetWorldUnderMouse(out Vector hitLocation, out Actor TraceAct
 	TraceActor = none;
 }
 
+/**
+ * Get whatever node the mouse is 
+ * currently hovering over
+ * 
+ **/
+public function ISONode GetCurrentHoverNode(ISOGridController gc)
+{
+	local Actor worldActor;
+
+	// get the data
+	GetWorldUnderMouse(mouseOnWorld, worldActor);
+	
+	// Fail fast
+	if( worldActor==none )
+		return none;
+
+	return gc.GetWorldspaceToGridspace(mouseOnWorld);
+}
+
 event PostRender()
 {
 	local Vector2D mouse2D;
-
+	local ISOCoreGameInfo game;
+	
 	// Pre calculate most common variables
 	if ( SizeX != Canvas.SizeX || SizeY != Canvas.SizeY )
 	{
@@ -97,9 +124,62 @@ event PostRender()
 	Canvas.SetPos( 10.0, 10.0 );
 	Canvas.DrawText( "Mouse: X:" $ mouse2D.X $ ", Y:" $ mouse2D.Y );
 
+
+	// Now draw the radius debug stle
+	//DrawMapZone(zone);
+
 	//ISOCoreGameInfo(WorldInfo.Game).grid.showNodes(self);
-	
+
+	game = ISOCoreGameInfo(WorldInfo.Game);
+	ISOCorePlayerController(PlayerOwner).setHover( GetCurrentHoverNode( game.GetGridController() ) );
+
 }
+
+function DrawMapZone(MapZone zone)
+{
+	local Array<Vector2D>   vb;
+	local Array<int>        cb;
+	local ISONode           node;
+	local float             size;
+
+	if( zone==None ) return;
+
+	size = class'ISONode'.const.NODE_SIZE/2;
+
+	foreach zone.nodes(node)
+	{
+		vb.AddItem(WorldspaceToHudspace(node.GetCentroid() + vect(-1, 1,0)*size) );
+		vb.AddItem(WorldspaceToHudspace(node.GetCentroid() + vect( 1, 1,0)*size) );
+		vb.AddItem(WorldspaceToHudspace(node.GetCentroid() + vect( 1,-1,0)*size) );
+		vb.AddItem(WorldspaceToHudspace(node.GetCentroid() + vect(-1,-1,0)*size) );
+
+		cb.AddItem(0);
+	}
+
+	HudMovie.DrawGrid(vb, cb);
+	HudMovie.DrawActiveNodes();
+}
+function HideMapZone()
+{
+	zone = none;
+	HudMovie.HideActiveNodes();
+}
+
+public function Vector2D WorldspaceToHudspace(Vector world)
+{
+	local Vector2D v2d;
+	local Vector v;
+
+	v = Canvas.Project(world);
+	v.X /= scaleformRatioX;
+	v.Y /= scaleformRatioY;
+
+	v2d.X = v.X;
+	v2d.Y = v.Y;
+
+	return v2d;
+}
+
 
 function DrawProjectedBox(Vector from, float size, int r, int g, int b, int a )
 {
@@ -174,3 +254,35 @@ function CalcScaleformValues()
 	scaleformRatioX	= SizeX / (k.X - h.X);
 	scaleformRatioY	= SizeY / (k.Y - h.Y);
 }
+
+/*
+function ShowRadius(Vector loc, int size)
+{
+	local Canvas Canvas;
+	local Vector screenspace, screenspaceW, screenspaceH;
+	// Go from Worldspace to screenspace
+
+	Canvas = lastCanvas;
+
+	
+	screenspace = Canvas.Project(loc);
+	`Log("Loc Info : " @loc @screenspace );
+
+	screenspaceW = loc;
+	screenspaceW.X += size*class'ISONode'.const.NODE_SIZE;
+	screenspaceW = Canvas.Project(screenspaceW);
+
+	screenspaceH = loc;
+	screenspaceH.X += size*class'ISONode'.const.NODE_SIZE;
+	screenspaceH = Canvas.Project(screenspaceH);
+
+    screenspace.X *= scaleformRatioX;
+	screenspace.Y *= scaleformRatioY;
+
+	HudMovie.ShowRadius(screenspace.x, screenspace.y, 20, 20);
+}
+function HideRadius()
+{
+	HudMovie.HideRadius();
+}
+*/

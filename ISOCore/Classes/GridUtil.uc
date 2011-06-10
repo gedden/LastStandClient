@@ -137,10 +137,32 @@ static function bool IsValid(ISONode root, ISOGrid grid, ISOUnitBase base, optio
 			return false;
 		}
 
-		if( passableArea != none )
-			passableArea.Put(node.GetIndex(), PASSABLE );
+		//if( passableArea != none ) passableArea.Put(node.GetIndex(), PASSABLE );
 	}
 	return true;
+}
+
+public static final function Array<ISONode> GetNeighbors(ISONode centroid, ISOGrid grid)
+{
+	local Array<ISONode> peers;
+	local ISONode node;
+	local int r, c;
+
+	// Check in a simple area and work out
+	//  _ _ _
+	// |_|_|_|
+	// |_|C|_| c is centroid
+	// |_|_|_|
+	for( r=-1;r<=1;r++ )
+		for( c=-1;c<=1;c++ )
+		{
+			// Get the node
+			node = grid.GetNode(centroid.row + r, centroid.col + c);
+
+			if( node != none )
+				peers.AddItem(node);
+		}
+	return peers;
 }
 
 private static final function GetAllValidPeers(ISONode centroid, ISOGrid grid, ISOUnitBase base, ISONode root, float uRadius, out array<ISONode> nodes, out HashArea passableArea)
@@ -178,6 +200,7 @@ private static final function GetAllValidPeers(ISONode centroid, ISOGrid grid, I
 			m = passableArea.Get(node.GetIndex());
 
 			if( m == UNKNOWN && IsValid(node, grid, base, passableArea ) )
+			//if( (m == UNKNOWN && IsValid(node, grid, base, passableArea )) || m == PASSABLE )
 			{
 				nodes.AddItem(node);				
 
@@ -252,6 +275,8 @@ public static final function array<ISONode> GetMovementArea(ISONode centroid, in
 	// |_|C|_| c is centroid
 	// |_|_|_|
 	GetAllValidPeers(centroid, grid, base, centroid, uRadius, nodes, passableArea);
+	//`log("passable area: " @passableArea.count @nodes.Length);
+	//passableArea.toLog();
 	return nodes;
 }
 

@@ -8,6 +8,7 @@ class ISOCorePlayerController extends GamePlayerController;
 
 var bool        ISOSelect;
 var ISOUnit     selected;
+var ISONode     hoverNode;
 
 
 
@@ -22,6 +23,22 @@ exec function onClick();
 exec function bool onRequestMove(ISOUnit unit, Vector loc);
 exec function onSelect(ISOUnit unit);
 exec function onDeselect(ISOUnit unit);
+exec function onHoverOver(ISONode node);
+exec function onHoverOut(ISONode node);
+
+function setHover(ISONode node)
+{
+
+	// Check to see if I have a new hover node
+	if( hoverNode != node )
+	{
+		onHoverOut(hoverNode);
+
+		hoverNode = node;
+
+		onHoverOver(node);
+	}
+}
 
 simulated event PreBeginPlay()
 {
@@ -240,7 +257,7 @@ auto state ISOPlayerTurn extends ISOBaseSpectating
 	 **/
 	exec function onSelect(ISOUnit unit)
 	{
-		unit.onSelect();
+		selected.onSelect();
 	}
 
 	/**

@@ -22,6 +22,38 @@ function ReceiveMouseCoords(float x, float y)
 	MouseY = y;
 }
 
+/** FROM UNREALSCRIPT TO ACTIONSCRIPT **/
+/*
+function ShowRadius(float xloc, float yloc, float w, float h)
+{
+	ActionScriptVoid("ShowRadius");
+}
+*/
+
+function DrawGrid(Array<Vector2D> verts, Array<int> colorIndices)
+{
+	local array<int> vb;
+	local Vector2D v;
+
+	foreach verts(v)
+	{
+		vb.AddItem(v.x);
+		vb.AddItem(v.y);
+	}
+	SetVariableIntArray("grid.vb",0, vb);
+	SetVariableIntArray("grid.cb",0, colorIndices);
+}
+
+function DrawActiveNodes()
+{
+	ActionScriptVoid("DrawActiveNodes");
+}
+function HideActiveNodes()
+{
+	ActionScriptVoid("HideActiveNodes");
+}
+
+
 DefaultProperties
 {
 	bDisplayWithHudOff=FALSE

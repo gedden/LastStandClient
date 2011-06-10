@@ -8,7 +8,7 @@
 class HashArea extends Object;
 
 var int table_size;
-
+var int count; // populated size
 var array<HashEntry> table;
 
 public static function HashArea Create(int size)
@@ -25,47 +25,81 @@ public static function HashArea Create(int size)
 
 public function bool Contains(int key)
 {
-	local int hash;
-	
-	hash = (key % TABLE_SIZE);
-
-	while (table[hash] != none && table[hash].key != key)
-		hash = (hash + 1) % TABLE_SIZE;
-
-	return (table[hash] == none);
+	return Get(key)!=INDEX_NONE;
 }
 
 public function int Get(int key)
 {
+	local int checksum;
 	local int hash;
+	local int startingHash;
 	
+
+	checksum = 0;
 	hash = (key % TABLE_SIZE);
+	startingHash = hash;
 
 	while (table[hash] != None && table[hash].key != key)
+	{
 		hash = (hash + 1) % TABLE_SIZE;
+		// Sanity check
+
+		checksum++;
+		if( hash == startingHash || checksum > count) break;
+	}
 
 	if (table[hash] == none)
-		return -1;
+	{
+		//`log("Getting Hash (FAILED): " @key @Hash );
+		return INDEX_NONE; // -1 == INDEX_NONE
+	}
 	else
+	{
+		//`log("Getting Hash (PASSED): " @key @Hash @table[hash].value );
 		return table[hash].value;
+	}
 }
  
 
 public function Put(int key, const int value)
 {
 	local int hash;
+	local int start;
 	local HashEntry entry;
 
 	hash = (key % TABLE_SIZE);
+	start= hash;
 
 	while (table[hash] != none && table[hash].key != key)
 	{
 		hash        = (hash + 1) % TABLE_SIZE;
-		entry       = new class'HashEntry';
-		entry.key   = key;
-		entry.value = value;
 
-		table[hash] = entry;
+		if( hash == start )
+		{
+			`log("  ****** CRITICAL HASHAREA FAILURE! HASH TABLE IS NOT BIG ENOUGH!"  );
+			return;
+		}
+		
+	}
+	//`log("Adding Hash " @key @hash );
+	entry       = new class'HashEntry';
+	entry.key   = key;
+	entry.value = value;
+
+	table[hash] = entry;
+	count++;
+}
+
+public function toLog()
+{
+	local int hash;
+
+	for( hash=0; hash<table_size; hash++ )
+	{
+		if( table[hash] == none )
+			`log("Entry :" @hash @table[hash] );
+		else
+			`log("Entry :" @hash @table[hash].key @table[hash].value );
 	}
 }
 
