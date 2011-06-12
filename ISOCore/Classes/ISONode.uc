@@ -79,6 +79,11 @@ function ISOUnit GetUnit()
 	return unit;
 }
 
+public function string ToString()
+{
+	return "{" @ row @ "," @ col @ "}";
+}
+
 /**
  * Set the unit on this
  * ISO Node

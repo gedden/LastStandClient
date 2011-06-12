@@ -6,7 +6,8 @@ function Initialize()
 	Advance(0.0f);
 }
 
-function SetVertexBuffer(Array<Vector2D> verts, Array<int> colorIndices)
+/*
+function SetVertexBuffer(const out Array<Vector2D> verts, const out Array<int> colorIndices)
 {
 	local array<int> vb;
 	local Vector2D v;
@@ -18,6 +19,24 @@ function SetVertexBuffer(Array<Vector2D> verts, Array<int> colorIndices)
 	}
 	SetVariableNumber("grid.indices",vb.Length);
 	SetVariableIntArray("grid.vb",0, vb);
+	SetVariableIntArray("grid.cb",0, colorIndices);	
+}
+*/
+
+/**
+ * Set the vertex buffer
+ **/
+function SetVertexBuffer(const out Array<int> vb)
+{
+	SetVariableNumber("grid.indices",vb.Length);
+	SetVariableIntArray("grid.vb",0, vb);
+}
+
+/**
+ * Set the index buffer
+ **/
+function SetColorBuffer(const out Array<int> colorIndices)
+{
 	SetVariableIntArray("grid.cb",0, colorIndices);	
 }
 

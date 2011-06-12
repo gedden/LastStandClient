@@ -24,6 +24,9 @@ function Array< ISONode > GetPath(ISONode goal, ISOGrid grid)
 	local Pathfinder finder;
 	local Array<ISONode> path;
 
+
+	if( nodes.Find(goal)<0 ) return path;
+
 	finder = new class'PathFinder';
 
 	finder.setup(grid, self, root, goal);

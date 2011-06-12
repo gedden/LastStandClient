@@ -2,6 +2,7 @@ class ISOPathNode extends ISONode;
 
 var bool open;
 var bool closed;
+var int valid;
 var ISOPathNode parent;
 
 var float g; // The exact cost to reach this node from the starting node. 
@@ -32,5 +33,5 @@ DefaultProperties
 	open    = false;
 	closed  = false;
 	parent  = none;
-	travesable = true;
+	travesable = false;
 }

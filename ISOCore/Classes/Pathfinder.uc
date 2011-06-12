@@ -71,8 +71,11 @@ private function initialize()
 	pnode.h     = GetHeuristic(start, goal);
 	pnode.f     = (alpha*pnode.g + (1-alpha)*pnode.h)/ FMax(alpha, 1-alpha);
 
-	visited = new class'HashMapISOPathNode';
-	visited.setup(graph.nodes.Length);
+	if( visited == none )
+	{
+		visited = new class'HashMapISOPathNode';
+		visited.setup(graph.nodes.Length);
+	}
 
 	Push(pnode, open);
 }

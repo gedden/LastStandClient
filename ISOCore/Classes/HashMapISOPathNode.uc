@@ -1,12 +1,13 @@
 class HashMapISOPathNode extends Object;
 
-var HashArea hash;
+var HashInterface hash;
 var array<ISOPathNode> list;
 
 public function setup(int size)
 {
 	// Setup the hash table
-	hash = class'HashArea'.static.Create(size);
+	//hash = class'HashArea'.static.Create(size);
+	hash = class'HashChain'.static.Create(size);
 }
 
 public function bool Contains(ISOPathNode node)
@@ -34,10 +35,41 @@ public function ISOPathNode Get(int key)
 
 public function Put(int key, ISOPathNode node)
 {
-	list.AddItem(node);
-	hash.Put(key, list.Length-1);
+	if( !ContainsKey(key) )
+	{
+		list.AddItem(node);
+		hash.Put(key, list.Length-1);
+	}
 }
 
+
+public function toLog()
+{
+	local int hash;
+	local HashEntryChain entry;
+	local HashChain chain;
+	local string line;
+
+
+	chain = HashChain(self.hash);
+
+	for( hash=0; hash<chain.table_size; hash++ )
+	{
+		if( chain.table[hash] == none )
+			`log("Entry :" @hash @chain.table[hash] );
+		else
+		{
+			entry = chain.table[hash];
+			line = "";
+			while( entry != none )
+			{
+				line @= list[entry.value].ToString();
+				entry = entry.next;
+			}
+			`log("Entry: " @Line );
+		}
+	}
+}
 /**
  * When I have time to write an actual hashtable, I will. 
  * 

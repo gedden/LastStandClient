@@ -5,7 +5,7 @@
  * Based on http://www.algolist.net/Data_structures/Hash_table/Simple_example
  **/
 
-class HashArea extends Object;
+class HashArea extends Object implements(HashInterface);
 
 var int table_size;
 var int count; // populated size

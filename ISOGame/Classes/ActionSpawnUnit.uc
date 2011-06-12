@@ -15,6 +15,7 @@ function actionBegin(int msLate)
 
 	unit = WorldInfo.Spawn(unitClass);
 	unit.SetLocation( node.GetCentroid() );
+	ISOUnit(unit).SetNode(node);
 }
 
 DefaultProperties

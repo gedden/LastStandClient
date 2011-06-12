@@ -12,7 +12,7 @@ var Box bounds;
 var BoxSphereBounds extent;
 var Vector gridOrigin;
 
-var GridView view;
+var MapZoneView view;
 
 var	class<ISOGrid> GridClass;
 var	class<ISONode> NodeClass;
@@ -22,6 +22,7 @@ var	class<ISONode> NodeClass;
  **/
 function Setup()
 {
+	local ISOGridController me;
 	// Construct the grid bounds
 	ConstructBounds();
 
@@ -29,8 +30,10 @@ function Setup()
 	grid = new (none, GetMapName()) GridClass;
 	grid.setup(NodeClass, self);
 
-	// Setup the grid view
-	view = class'GridView'.static.SpawnView(self);
+	// Setup the map zone view
+	view = new class'MapZoneView';
+	me = ISOCoreGameInfo(WorldInfo.Game).GetGridController();
+	view.setup( me );
 }
 
 function String GetMapName()
@@ -83,6 +86,28 @@ function ConstructBounds()
 	//gridOrigin.Z = -64;
 }
 
+function ShowMovementArea(ISOUnit unit)
+{
+	view.BuildMovementView(unit);
+	view.DrawMapZone();
+}
+
+function ShowPath(const out Array<ISONode> path)
+{
+	view.UpdateMapZone(grid, path);
+}
+
+function MapPathZone GetMovementZone()
+{
+	//return view.GetZone();
+	return view.GetPathZone();
+}
+
+function HideMovementArea()
+{
+	view.HideMapZone();
+}
+
 
 /**
  * Go from worldspace to gridspace
@@ -125,67 +150,6 @@ function Vector GetVirtualCentroid(int row, int col, int height)
 	centroid.Y += class'ISONode'.const.NODE_SIZE/2;
 
 	return centroid;
-}
-
-function DrawMapZone(MapZone zone, optional Array<ISONode> path)
-{
-	local Array<Vector2D>   vb;
-	local Array<int>        cb;
-	local ISONode           node;
-	local float             size;
-	local Vector            root;
-
-
-	if( zone==None ) return;
-
-	root = zone.root.GetCentroid();
-
-	size = class'ISONode'.const.NODE_SIZE/2;
-
-	foreach zone.nodes(node)
-	{
-		vb.AddItem(WorldspaceToDecalspace(root, node.GetCentroid() + vect(-1, 1,0)*size) );
-		vb.AddItem(WorldspaceToDecalspace(root, node.GetCentroid() + vect( 1, 1,0)*size) );
-		vb.AddItem(WorldspaceToDecalspace(root, node.GetCentroid() + vect( 1,-1,0)*size) );
-		vb.AddItem(WorldspaceToDecalspace(root, node.GetCentroid() + vect(-1,-1,0)*size) );
-
-		
-		if( path.Length > 0 )
-		{
-			if( path.Find(node) > 0 )
-				cb.AddItem(1);
-			else
-				cb.AddItem(2);
-		}
-	}
-
-	// Setup the view
-	view.SetLocation(root);
-
-	view.SetHidden(false);
-	view.gfx.SetVertexBuffer(vb, cb);
-	view.gfx.DrawActiveNodes();
-}
-
-public function HideMapZone()
-{
-	view.SetHidden(true);
-}
-
-public function Vector2D WorldspaceToDecalspace(Vector root, Vector world)
-{
-	local Vector2D v2d;
-
-	local Vector2D h;
-	local Vector2D k;
-
-	// ratio of viewport compared to native resolution
-	view.gfx.GetVisibleFrameRect(h.x, h.y, k.x, k.y);
-
-	v2d.X = world.X - root.X - (h.X - k.X)/2;
-	v2d.Y = world.Y - root.Y - (h.Y - k.Y)/2;
-
-	return v2d;
 }
 
 DefaultProperties

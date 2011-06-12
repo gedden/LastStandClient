@@ -27,8 +27,6 @@ function DeployBases()
 	local PlayerStartData start;
 	local ActionSpawnUnit spawn;
 
-	`log("Hitting the scheduler" @GetGrid().PlayerStarts.Length);
-
 	// Deploy a base at each starting area
 	foreach GetGrid().PlayerStarts(start)
 	{
@@ -37,7 +35,14 @@ function DeployBases()
 		spawn.unitClass = class'BuildingUnit';
 		spawn.node      = GetGrid().GetNode(start.row, start.col);
 
-		sequencer.Schedule(spawn, 5000);
+		sequencer.Schedule(spawn);
+
+		// Make a dude near the building
+		spawn           = new class'ActionSpawnUnit';
+		spawn.unitClass = class'Character';
+		spawn.node      = GetGrid().GetNode(start.row+5, start.col+5);
+
+		sequencer.Schedule(spawn, 1500);
 	}
 
 }
@@ -45,4 +50,5 @@ function DeployBases()
 DefaultProperties
 {
 	PlayerControllerClass   = class'ISOGame.ISOGamePlayerController'
+	HUDType                 = class'ISOGame.ISOFogHUD'
 }

@@ -165,7 +165,56 @@ public static final function Array<ISONode> GetNeighbors(ISONode centroid, ISOGr
 	return peers;
 }
 
-private static final function GetAllValidPeers(ISONode centroid, ISOGrid grid, ISOUnitBase base, ISONode root, float uRadius, out array<ISONode> nodes, out HashArea passableArea)
+private static final function GetAllValidPeers(ISONode root, ISOGrid grid, ISOUnitBase base, float uRadius, out array<ISONode> nodes, out HashArea passableArea)
+{
+	local array<ISONode> open;
+	local array<ISONode> neighbors;
+	local ISONode node, centroid;
+	local int m;
+
+	open.AddItem(root);
+
+	while( open.Length > 0 )
+	{
+		// Remove it from the open list
+		centroid = Pop(open);
+
+		// Get the neighbors of the currently open node
+		neighbors = GetNeighbors(centroid, grid);
+
+		foreach neighbors(node)
+		{
+			// Sanity check
+			if( nodes.Find(node)!=-1 ) continue;
+
+			// Distance check
+			if( VSize(root.GetCentroid() - node.GetCentroid()) > uRadius ) continue;
+
+			// Step check
+			if( base.GetStep() < Abs(centroid.height - node.height ) )
+			{
+				// I cant get to it, from here
+				//if( passable != none ) passable.Put(node.GetIndex(), UNKNOWN);
+				continue;
+			}
+
+			// Check to see if the node has been checked before, and is passable
+			m = passableArea.Get(node.GetIndex());
+
+			if( m == UNKNOWN && IsValid(node, grid, base, passableArea ) )
+			//if( (m == UNKNOWN && IsValid(node, grid, base, passableArea )) || m == PASSABLE )
+			{
+				nodes.AddItem(node);				
+				open.AddItem(node);
+			}	
+		}
+	}
+}
+
+/** 
+ *  So it looks like you cant call the same function recursively over 250 timess
+ *
+private static final function GetAllValidPeersRECURSIVE(ISONode centroid, ISOGrid grid, ISOUnitBase base, ISONode root, float uRadius, out array<ISONode> nodes, out HashArea passableArea)
 {
 	local array<ISONode> children;
 	local ISONode node;
@@ -209,40 +258,7 @@ private static final function GetAllValidPeers(ISONode centroid, ISOGrid grid, I
 		}
 
 	foreach children(node)
-		GetAllValidPeers(node, grid, base, root, uRadius, nodes, passableArea);
-}
-/*
-private static final function array<ISONode> GetValidPeers(ISONode centroid, ISOGrid grid, ISOUnitBase base, out HashArea passableArea)
-{
-	local array<ISONode> nodes;
-	local ISONode node;
-	local int r, c, m;
-
-	// Check in a simple area and work out
-	//  _ _ _
-	// |_|_|_|
-	// |_|C|_| c is centroid
-	// |_|_|_|
-	for( r=-1;r<=1;r++ )
-		for( c=0;c<=2;c++ )
-		{
-			// Get the node
-			node = grid.GetNode(centroid.row + r, centroid.col + c);
-
-			// Step check
-			if( base.GetStep() < Abs(centroid.height - node.height ) )
-			{
-				// I cant get to it, from here
-				//if( passable != none ) passable.Put(node.GetIndex(), UNKNOWN);
-				continue;
-			}
-
-			// Check to see if the node has been checked before, and is passable
-			m = passableArea.Get(node.GetIndex());
-
-			if( m == UNKNOWN && IsValid(node, grid, base, passableArea ) )
-				nodes.AddItem(node);				
-		}
+		GetAllValidPeersRECURSIVE(node, grid, base, root, uRadius, nodes, passableArea);
 }
 */
 
@@ -274,66 +290,24 @@ public static final function array<ISONode> GetMovementArea(ISONode centroid, in
 	// |_|_|_|
 	// |_|C|_| c is centroid
 	// |_|_|_|
-	GetAllValidPeers(centroid, grid, base, centroid, uRadius, nodes, passableArea);
+	GetAllValidPeers(centroid, grid, base, uRadius, nodes, passableArea);
 	//`log("passable area: " @passableArea.count @nodes.Length);
 	//passableArea.toLog();
 	return nodes;
 }
 
-/**
- * Get all the nodes in a 
- * radius around the passed
- * in range
- **
-public static final function array<ISONode> GetMovementAreaSHIT(ISONode centroid, int radius, ISOGrid grid, ISOUnitBase base)
+private static function Push(ISONode node, out Array<ISONode> list)
 {
-	local array<ISONode> nodes;
-	local int minRow, maxRow, r;
-	local int minCol, maxCol, c;
-	local int d;
-	local float uRadius;
-	local ISONode node;
-
-	// Real quick sanity check
-	if( centroid == none ) return nodes;
-
-	// Increase the range by the base size
-	radius += base.size;
-
-	minRow = Max(0,           centroid.row-radius);
-	maxRow = Min(grid.rows-1, centroid.row+radius);
-	
-	minCol = Max(0,           centroid.col-radius);
-	maxCol = Min(grid.cols-1, centroid.col+radius);
-
-	// Convert the passed in radius to 'UDK' scale
-	uRadius = radius * class'ISONode'.const.NODE_SIZE;
-
-	//minCol +=1;
-	//maxCol +=1;
-
-	for( r=minRow; r<=maxRow; r++ )
-	{
-		for( c=minCol; c<=maxCol; c++ )
-		{
-			node = grid.GetNode(r,c);
-
-			if( node == none ) continue;
-
-			// Radial check to center
-			d = VSize(centroid.location - node.location);
-			if( d > uRadius ) continue;
-
-
-
-			// Check node vs the base
-			if( IsValid(node, grid, base) )
-				nodes.AddItem(node);
-		}
-	}
-	return nodes;
+	list.InsertItem(0, node);
 }
-*/
+private static function ISONode Pop(out Array<ISONode> list)
+{
+	local ISONode node;
+	node = list[0];
+	list.Remove(0,1);
+	return node;
+}
+
 DefaultProperties
 {
 }
