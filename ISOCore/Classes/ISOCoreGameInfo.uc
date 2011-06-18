@@ -1,15 +1,15 @@
-/*****************************************
+/**
  * Main Entry point for the core of the 
  * game play portion of the game client.
  * 
  * So it beings. ~ag
- ****************************************/
+ **/
 class ISOCoreGameInfo extends GameInfo;
 
 var ISOGridController gc;
 var	class<ISOGridController> GridControllerClass;
 var ISOCorePlayerController LocalPlayer;
-var ActionSequencer sequencer;
+var protected ActionSequencer sequencer;
 
 event PostLogin( PlayerController NewPlayer )
 {
@@ -29,6 +29,11 @@ function ISOGridController GetGridController()
 function ISOGrid GetGrid()
 {
 	return gc.grid;
+}
+
+function ActionSequencer GetActionSequencer()
+{
+	return sequencer;
 }
 
 event PreBeginPlay()

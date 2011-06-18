@@ -117,7 +117,11 @@ static function bool IsValid(ISONode root, ISOGrid grid, ISOUnitBase base, optio
 
 		// Is the ground to rugged for me to fit on it?
 		if( base.GetStep() < Abs(root.height - node.height ) )
+		{
+			`Log("Root Neighbor HEIGHT: " @root.height @root.index @root.IsA('ISOPathNode') );
+			//`log("Base.GetStep()" @base.GetStep() @" vs (" @root.height @"-" @node.height @") " @Abs(root.height - node.height)  @"Root index" @root.index );
 			return false;
+		}
 
 		// Double check it!
 		if( passableArea != none )

@@ -27,7 +27,7 @@ function Reset()
  **/
 function Schedule(Action action, optional int offset=0)
 {
-	game.Add(action, offset);
+	game.Add(action, time+offset);
 	action.SetWorldInfo(WorldInfo);
 }
 

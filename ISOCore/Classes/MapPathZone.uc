@@ -2,6 +2,7 @@ class MapPathZone extends Object;
 
 var HashMapISOPathNode nodes;
 var ISOPathNode root;
+var int radius;
 
 /***
  * Get all the nodes in the hashtable
@@ -88,8 +89,17 @@ private final function GetAllValidPeers(ISOPathNode root, ISOGrid grid, ISOUnitB
 					node.parent = centroid;
 				}
 
+				
 				// Add it to the list of available nodes
-				nodes.Put(node.GetIndex(), node);
+				if( c <= uRadius )
+				{					
+					node.inRange = true;
+					nodes.Put(node.GetIndex(), node);
+				}
+				else
+				{
+					node.inRange = node.inRange || false;
+				}
 
 				// Only add the node if its not already in the open list (already queue'd up)
 				if( !node.open )
@@ -108,14 +118,17 @@ public function GetPath(ISONode goal, out Array<ISONode> path, const out ISOGrid
 
 	n = nodes.Get(goal.GetIndex());
 
+	if( !n.IsPathableNode() ) return;
+	`log("COst: " @n.g );
 	while (n!=none && n != root )
 	{
 		//path.push(pathVisited.node);
 		path.InsertItem(0, grid.nodes[n.GetIndex()]);
-		`log("Adding : " @ n );
+		//`log("Adding : " @ n );
 		n = n.parent;
 	}
 	path.InsertItem(0,root);
+	
 }
 
 /**
@@ -123,11 +136,15 @@ public function GetPath(ISONode goal, out Array<ISONode> path, const out ISOGrid
  * radius around the passed
  * in range
  **/
-public static final function MapPathZone Create(ISONode centroid, ISOUnitBase base, int radius, ISOGrid grid)
+public static final function MapPathZone Create(ISONode centroid, ISOUnitBase base, int radiusIn, ISOGrid grid)
 {
 	local MapPathZone zone;
 	local float uRadius;
 	local HashMapISOPathNode hash;
+
+
+	// Set the radius
+	
 
 	// Init the class
 	zone = new class'MapPathZone';
@@ -137,22 +154,42 @@ public static final function MapPathZone Create(ISONode centroid, ISOUnitBase ba
 	if( base == none ) return zone;
 
 	// Increase the range by the base size
-	radius += base.size;
+	zone.radius = radiusIn + base.size;
 
 	// Convert the passed in radius to 'UDK' scale
-	uRadius = radius * class'ISOPathNode'.const.NODE_SIZE;
+	uRadius = zone.radius * class'ISOPathNode'.const.NODE_SIZE;
 
 	// Initialize the passable hash
 	hash = new class'HashMapISOPathNode';
-	hash.setup(Square(radius*2));
+	hash.setup(Square(zone.radius*2));
 	zone.nodes  = hash;
 	zone.root   = zone.ToPathNode(centroid);
 	
 	// Check in a simple area and work out
 	zone.GetAllValidPeers(zone.root, grid, base, uRadius);
 
+	// Remove any closed nodes that are still in the hashtable
+	//zone.cleanup();
+
 	return zone;
 }
+/*
+private function cleanup()
+{
+	local Array<ISOPathNode> allNodes;
+	local ISOPathNode node;
+
+	// Do some cleanup! Remove all the closed nodes from the hashtable
+	allNodes = GetNodes();
+
+	foreach allNodes(node)
+	{
+		if( node.closed )
+			nodes.Put(node.GetIndex(), None);
+	}
+
+}
+*/
 
 private function ISOPathNode ToPathNode(const ISONode node, optional int defaultCost=99999)
 {

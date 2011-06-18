@@ -1,190 +1,142 @@
+/**
+ * A very simple key/object static sized hash map
+ * 
+ **/
+
 class HashMap extends Object;
 
-// Unfinished, base on http://www.algolist.net/Data_structures/Hash_table
+// Member variables
+var private int table_size;
+var private int count; // populated size
+var private Array<HashMapEntry> table;
 
-const DEFAULT_TABLE_SIZE = 128;
-
-var private float   threshold;
-var private int     maxSize;
-var private int     size;
-
-/*
-struct HashEntry
+/**
+ * Create a hashmap. Since this does not resize
+ * automatically, the programmer must pick a resonable
+ * starting size
+ **/
+public static function HashMap Create(int size)
 {
-	var int key;
-	var int value;
-};
-*/
+	local HashMap area;
 
-var private array<HashEntry> table;
+	area = new class'HashMap';
+	// Setup the size
+	area.table.Add(size);
+	area.table_size=size;
 
- 
-function initialize()
-{
-	table.Add(DEFAULT_TABLE_SIZE);
-}
- 
-
-function setThreshold(float thresh)
-{
-	threshold   = thresh;
-	maxSize     = table.length * threshold;
+	return area;
 }
 
-/*
-function int get(int key)
+/**
+ * Check to see if this hashtable
+ * contains an item.
+ * 
+ * This is just as expencive as Get()
+ **/
+public function bool Contains(int key)
+{
+	return Get(key)!=None;
+}
+
+/**
+ * Get an item from the hashtable
+ **/
+public function Object Get(const int key)
+{
+	local HashMapEntry entry;
+	local int hash;	
+
+	hash = (key % TABLE_SIZE);
+
+	// sanity check
+	if( table[hash] == none ) return None;
+
+	// Go down the chain
+	entry = table[hash];
+
+	while( entry != none )
+	{
+		if( entry.key == key ) return entry.value;
+		entry = entry.next;
+	}
+	return None;
+}
+ 
+/**
+ * Place an object in the hashtable 
+ * with the provided key
+ **/
+public function Put(const int key, const out Object value)
 {
 	local int hash;
-	local int initialHash;
-
-	initialHash = -1;
-	hash        = (key % table.length);
-
-	while (hash != initialHash && (table[hash] == DeletedEntry.getUniqueDeletedEntry() || table[hash] != null
-
-                        && table[hash].getKey() != key)) {
-
-                  if (initialHash == -1)
-
-                        initialHash = hash;
-
-                  hash = (hash + 1) % table.length;
-
-            }
-
-            if (table[hash] == null || hash == initialHash)
-
-                  return -1;
-
-            else
-
-                  return table[hash].getValue();
-
-      }
-
- 
-
-      public void put(int key, int value) {
-
-            int hash = (key % table.length);
-
-            int initialHash = -1;
-
-            int indexOfDeletedEntry = -1;
-
-            while (hash != initialHash
-
-                        && (table[hash] == DeletedEntry.getUniqueDeletedEntry()
-
-                        || table[hash] != null
-
-                        && table[hash].getKey() != key)) {
-
-                  if (initialHash == -1)
-
-                        initialHash = hash;
-
-                  if (table[hash] == DeletedEntry.getUniqueDeletedEntry())
-
-                        indexOfDeletedEntry = hash;
-
-                  hash = (hash + 1) % table.length;
-
-            }
-
-            if ((table[hash] == null || hash == initialHash)
-
-                        && indexOfDeletedEntry != -1) {
-
-                  table[indexOfDeletedEntry] = new HashEntry(key, value);
-
-                  size++;
-
-            } else if (initialHash != hash)
-
-                  if (table[hash] != DeletedEntry.getUniqueDeletedEntry()
-
-                             && table[hash] != null && table[hash].getKey() == key)
-
-                        table[hash].setValue(value);
-
-                  else {
-
-                        table[hash] = new HashEntry(key, value);
-
-                        size++;
-
-                  }
-
-            if (size >= maxSize)
-
-                  resize();
-
-      }
-
- 
-
-      private void resize() {
-
-            int tableSize = 2 * table.length;
-
-            maxSize = (int) (tableSize * threshold);
-
-            HashEntry[] oldTable = table;
-
-            table = new HashEntry[tableSize];
-
-            size = 0;
-
-            for (int i = 0; i < oldTable.length; i++)
-
-                  if (oldTable[i] != null
-
-                             && oldTable[i] != DeletedEntry.getUniqueDeletedEntry())
-
-                        put(oldTable[i].getKey(), oldTable[i].getValue());
-
-      }
-
- 
-
-      public void remove(int key) {
-
-            int hash = (key % table.length);
-
-            int initialHash = -1;
-
-            while (hash != initialHash
-
-                        && (table[hash] == DeletedEntry.getUniqueDeletedEntry()
-
-                        || table[hash] != null
-
-                        && table[hash].getKey() != key)) {
-
-                  if (initialHash == -1)
-
-                        initialHash = hash;
-
-                  hash = (hash + 1) % table.length;
-
-            }
-
-            if (hash != initialHash && table[hash] != null) {
-
-                  table[hash] = DeletedEntry.getUniqueDeletedEntry();
-
-                  size--;
-
-            }
-
-      }
-
+	local HashMapEntry entry;
+	local HashMapEntry current;
+
+	if( value == none )
+	{
+		Remove(key);
+	}
+
+	entry       = new class'HashMapEntry';
+	entry.key   = key;
+	entry.value = value;
+	entry.next  = none;
+
+	hash = (key % TABLE_SIZE);
+
+	if( table[hash] == none )
+		table[hash] = entry;
+	else
+	{
+		// Go down the chain
+		current = table[hash];
+
+		while( current.next != none )
+			current = current.next;
+		current.next = entry;
+	}
+	count++;
 }
-*/
+
+/**
+ * Remove an item from the
+ * hashtable
+ **/
+public function Remove(int key)
+{
+	local HashMapEntry prev;
+	local HashMapEntry entry;
+	local int hash;	
+
+	hash = (key % TABLE_SIZE);
+
+	// sanity check, its already gone
+	if( table[hash] == none ) return;
+
+	// Go down the chain
+	entry = table[hash];
+	prev  = none;
+
+	// Go down the chain
+	while( entry != none )
+	{
+		if( entry.key == key )
+		{
+			if( prev == none )
+				table[hash] = entry.next;   // Pop the top of the chain
+			else
+				prev.next = entry.next;     // vaporize the current entry
+			count--;
+			return;
+		}
+		prev  = entry;
+		entry = entry.next;
+
+	}
+	return;
+}
+
 DefaultProperties
 {
-	threshold   = 0.75f;
-	maxSize     = 96;
-	size        = 0;
+	table_size = 128;
 }

@@ -12,15 +12,9 @@ var float           scaleformRatioY;
 
 var bool drawRadius;
 var Vector          radiusAt;
-var MapZone zone;
 var int radiusSize;
 
 var Actor  debug;
-
-defaultproperties
-{
-	HUDClass = class'ISOCore.GFxHUD';
-}
 
 simulated function PostBeginPlay()
 {
@@ -31,7 +25,7 @@ simulated function PostBeginPlay()
 		// If I had a different hud, I guess I could set it up here? (lobby vs game)
 		//HudMovie = new class'ISOCore.GFxHUD';
 		HudMovie = new HUDClass;
-		HudMovie.Initialize();
+		HudMovie.Initialize(self);
 	}
 
 	
@@ -58,6 +52,16 @@ function vector2D getMouseCoordinates2D()
 function Vector getMouseCoordinates3D()
 {
 	return mouse3D;
+}
+
+function ShowLowerHUD(Tech tech)
+{
+	HudMovie.ShowHUD(tech);
+}
+
+function HideLowerHUD()
+{
+	HudMovie.HideHUD();
 }
 
 /**
@@ -135,6 +139,7 @@ event PostRender()
 
 }
 
+/*
 function DrawMapZone(MapZone zone)
 {
 	local Array<Vector2D>   vb;
@@ -164,6 +169,7 @@ function HideMapZone()
 	zone = none;
 	HudMovie.HideActiveNodes();
 }
+*/
 
 public function Vector2D WorldspaceToHudspace(Vector world)
 {
@@ -286,3 +292,8 @@ function HideRadius()
 	HudMovie.HideRadius();
 }
 */
+
+DefaultProperties
+{
+	HUDClass = class'ISOCore.GFxHUD';
+}

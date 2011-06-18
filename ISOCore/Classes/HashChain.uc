@@ -96,6 +96,7 @@ public function Remove(int key)
 
 	// Go down the chain
 	entry = table[hash];
+	prev  = none;
 
 	// Go down the chain
 	while( entry != none )

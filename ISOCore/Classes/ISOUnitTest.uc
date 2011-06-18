@@ -119,5 +119,4 @@ DefaultProperties
 	Components.Add(InitialSkeletalMesh)
 
 	called = 1
-	abilities=(0,1,2,3)
 }

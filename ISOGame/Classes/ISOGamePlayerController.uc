@@ -14,12 +14,39 @@ auto state ISOCombatPlayerTurn extends ISOPlayerTurn
 	 **/
 	exec function bool onRequestMove(ISOUnit unit, Vector loc)
 	{
+		local ISOGridController gc;
+		local ActionSequencer as;
+		local Array<ISONode> path;
+		local MapPathZone zone;
+		local ActionMove move;
+
+		if( selected == none ) return false;
+		if( hoverNode == none ) return false;
+
 		// Units dont move, silly rabbit!
 		if( unit.IsA('BuildingUnit') )
 			return false;
 
+		onDeselect(unit);
+
+		gc   = ISOCoreGameInfo(WorldInfo.Game).GetGridController();
+
+		// Get the movement zone
+		zone = gc.GetMovementZone();
+
+		// Build the path
+		zone.GetPath(hoverNode, path, gc.grid);
+
+		if( path.Length == 0 ) return false;
+
 		// Move the unit
-		unit.MoveTo(loc);
+		//unit.MoveTo(loc);
+		as   = ISOCoreGameInfo(WorldInfo.Game).GetActionSequencer();
+
+		move = new class'ActionMove';
+		move.setup(unit, path);
+
+		as.Schedule(move);
 
 		return true;
 	}
@@ -30,6 +57,7 @@ auto state ISOCombatPlayerTurn extends ISOPlayerTurn
 	exec function onSelect(ISOUnit unit)
 	{
 		super.onSelect(unit);
+		ISOHUD(myHUD).ShowLowerHUD(unit.GetTech());
 		BuildMovementPreview();
 	}
 
@@ -63,6 +91,11 @@ auto state ISOCombatPlayerTurn extends ISOPlayerTurn
 	exec function onDeselect(ISOUnit unit)
 	{
 		unit.onDeselect();
+		selected = none;
+		HideMovementPreview();
+
+		ISOHUD(myHUD).HideLowerHUD();
+		
 		//ISOHUD(myHUD).HideMapZone();
 	}
 
@@ -94,7 +127,7 @@ auto state ISOCombatPlayerTurn extends ISOPlayerTurn
 		zone.GetPath(hoverNode, path, gc.grid);
 		//`log("Path: " @zone.root.ToString() @ "-->" @ hoverNode.ToString() @path.Length);
 		gc.ShowPath(path);
-		`log("Showing: "  @hoverNode.ToString() );
+		`log("Showing: "  @hoverNode.ToString() @selected @"Speed: " @selected.GetSpeed() );
 		/*
 		// Get the movement zone
 		zone = gc.GetMovementZone();

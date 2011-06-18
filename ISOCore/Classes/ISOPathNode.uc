@@ -2,6 +2,7 @@ class ISOPathNode extends ISONode;
 
 var bool open;
 var bool closed;
+var bool inRange;
 var int valid;
 var ISOPathNode parent;
 
@@ -24,8 +25,24 @@ function Build(ISONode node)
 {
 	row = node.row;
 	col = node.col;
+	height = node.height;
 	index = node.index;
 	centroid = node.GetCentroid();
+}
+
+/**
+ * Not all nodes in a movement zone are pathable
+ * I can be BIGGER than 1 node, so I can occupy spaces I cant walk to.
+ * 
+ * Also, there may be spaces in range, but I cannot reach them
+ * with this char because of flags (flying etc)
+ * 
+ * Basically check this if your going to show a 
+ * path
+ **/
+function bool IsPathableNode()
+{
+	return open && inRange;
 }
 
 DefaultProperties
@@ -34,4 +51,5 @@ DefaultProperties
 	closed  = false;
 	parent  = none;
 	travesable = false;
+	inRange = false;
 }

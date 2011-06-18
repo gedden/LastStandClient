@@ -6,9 +6,32 @@ const UNIT_FLYING  = 2;
 
 // Member variables
 var protected int team;     // What team I am on
-var		      float size;     // How big my radius is
+var		      float size;   // How big my radius is
 var protected int step;     // How many nodes I can step up
+var protected int speed;
 var protected int MovementFlags;
+
+
+/** 
+ *  Get the stat for this unit
+ **/
+public function int GetSpeed()
+{
+	return speed;
+}
+public function SetSpeed(const int speedIn)
+{
+	speed = speedIn;
+}
+
+/** 
+ *  Get the stat for this unit
+ **/
+public function int GetStep()
+{
+	return step;
+}
+
 
 /**
  * Check the flags to see if
@@ -28,10 +51,6 @@ function bool isWalking()
 	return (MovementFlags&UNIT_WALKING) == UNIT_WALKING;
 }
 
-function int GetStep()
-{
-	return step;
-}
 
 DefaultProperties
 {

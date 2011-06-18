@@ -31,7 +31,7 @@ DefaultProperties
 {
 	Begin Object Name=NewDecalComponent
 		DecalTransform=DecalTransform_OwnerAbsolute
-		DecalMaterial=DecalMaterial'ISOPackage.ProjectedArea'
+		DecalMaterial=DecalMaterial'ISOPackage.GridView.ProjectedArea'
 		bStaticDecal=FALSE
 		Width=1024;
 		Height=1024;

@@ -3,33 +3,62 @@ class GFxHUD extends GFxMoviePlayer;
 var int MouseX;
 var int MouseY;
 
-var GFxObject MouseCursor;
+var protected GFxObject MouseCursor;
+var protected GFxObject lowerHUD;
+var ISOHUD hud;
 
-function Initialize()
+function Initialize(const ISOHUD parent)
 {
-	
+	hud = parent;
 	Start();
 	Advance(0.0f);
 
 	// ensure mouse cursor is always on top
 	MouseCursor = GetVariableObject("MouseCursorInstance");
 	MouseCursor.SetBool("topmostLevel", true);
+
+
+	// Get the lower hud object
+	lowerHUD = GetVariableObject("lower");
+
 }
 
+/******************* FROM ACTIONSCRIPT TO UNREALSCRIPT *************************/
 function ReceiveMouseCoords(float x, float y)
 {
 	MouseX = x;
 	MouseY = y;
 }
 
-/** FROM UNREALSCRIPT TO ACTIONSCRIPT **/
-/*
-function ShowRadius(float xloc, float yloc, float w, float h)
+function RecieveMouseClick()
 {
-	ActionScriptVoid("ShowRadius");
+	//`log( ISOHUD(Outer).WorldInfo );
+	`log("MOUSE CLICK!");
+	//ISOCoreGameInfo(ISOHUD(Outer).WorldInfo.Game).LocalPlayer.onClick();
+	ISOCoreGameInfo(hud.WorldInfo.Game).LocalPlayer.onClick();
 }
-*/
 
+/**
+ * Show the proper information
+ * in the lower hud
+ **/
+function ShowHUD(Tech tech)
+{
+	/*
+	SetStats(base.GetHealth(), base.GetSpeed(), base.GetAttack(), base.GetDefense());
+	SetName(base.GetName());
+	*/
+	lowerHUD.ActionScriptVoid("ShowHUD");
+}
+
+function HideHUD()
+{
+	lowerHUD.ActionScriptVoid("HideHUD");
+}
+
+
+
+/** FROM UNREALSCRIPT TO ACTIONSCRIPT **/
 function DrawGrid(Array<Vector2D> verts, Array<int> colorIndices)
 {
 	local array<int> vb;
@@ -53,6 +82,16 @@ function HideActiveNodes()
 	ActionScriptVoid("HideActiveNodes");
 }
 
+/************* LOWER HUD COMMUNICATION **********************/
+function SetStats(int health, int speed, int attack, int defense)
+{
+	lowerHUD.ActionScriptVoid("SetStats");
+}
+
+function SetName(string newName)
+{
+	lowerHUD.ActionScriptVoid("SetName");
+}
 
 DefaultProperties
 {

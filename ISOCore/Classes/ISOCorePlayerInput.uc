@@ -60,8 +60,11 @@ simulated exec function LeftMousePressed()
 simulated exec function LeftMouseReleased()
 {
 	mLeft = false;
-	//ISOCorePlayerController(Outer).onSelect();
-	Outer.onClick();
+	// I decided to have all the mouse clicks come from the HUD,
+	// because I wanted some of the UI action to be occluded by
+	// the HUD itself ~ag
+	//
+	//Outer.onClick();
 }
 
 simulated exec function RightMousePressed()

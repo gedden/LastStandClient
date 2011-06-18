@@ -68,8 +68,9 @@ function actionTick(int dt)
 
 	foreach active(item)
 	{
-		if( item.offset + item.action.GetDuration() > time )
+		if( item.offset + item.action.GetDuration() <= time )
 		{
+			`log("ActionGroup: Ending Action at" @time @item.offset );
 			item.action.actionEnd();
 			active.RemoveItem(item);
 		}

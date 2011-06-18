@@ -42,11 +42,11 @@ function SetColorBuffer(const out Array<int> colorIndices)
 
 function DrawActiveNodes()
 {
-	ActionScriptVoid("DrawActiveNodes");
+	//ActionScriptVoid("DrawActiveNodes");
 }
 function HideActiveNodes()
 {
-	ActionScriptVoid("HideActiveNodes");
+	//ActionScriptVoid("HideActiveNodes");
 }
 
 DefaultProperties
@@ -55,7 +55,7 @@ DefaultProperties
 	bEnableGammaCorrection=FALSE
 
 	// Path to your package/flash file here.
-	MovieInfo           = SwfMovie'ISOPackage.GradientCircle'
-	RenderTexture       = TextureRenderTarget2D'ISOPackage.GradientCircleRenderTexture'
+	MovieInfo           = SwfMovie'ISOPackage.GridView.GradientCircle'
+	RenderTexture       = TextureRenderTarget2D'ISOPackage.GridView.GradientCircleRenderTexture'
 	RenderTextureMode   = RTM_AlphaComposite;
 }

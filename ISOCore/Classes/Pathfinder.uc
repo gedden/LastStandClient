@@ -85,7 +85,7 @@ public function bool FindPath()
 	local ISOPathNode best, e;
 	local Array<ISONode> peers;
 	local ISONode next;
-	local int cost, i;
+	local int cost;
 
 	while (open.length > 0)
 	{
@@ -173,7 +173,6 @@ public function bool FindPath()
 				e.f = (alpha*e.g + (1-alpha)*e.h)/ FMax(alpha, 1-alpha);
 				e.parent = best;
 			}
-			i++;
 		}
 	}
 

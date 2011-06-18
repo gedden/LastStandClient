@@ -22,5 +22,4 @@ DefaultProperties
 	End Object
 
 	Components.Add(InitialSkeletalMesh)
-	abilities=(0,1,2,3)
 }
